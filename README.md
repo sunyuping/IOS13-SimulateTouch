@@ -1,6 +1,6 @@
 # IOS13-SimulateTouch V0.0.2
 
-A **system wide** touch event simulation library for iOS 11.0 - 13.6.
+A **system wide** touch event simulation library for iOS 11.0 - 14.
 
 Jailbroken device required. Application wide touch simulation library: [PTFakeTouch](https://github.com/Ret70/PTFakeTouch). Choose as you like:)
 
@@ -12,15 +12,11 @@ Read this in other languages（send email to me if you want to help to translate
 
 ## About Open Source
 
-The reason that I haven't release the source is that I wrote the code while doing iOS reverse engineering, so the code is like a mess. It is bad structured and unreadable now (and I don't want anyone to see bad code written by me). So I have to rewrite some parts of the source code to make it tidy and readable before releasing it. I don't have enough time for it so I can just post a release version for you guys to get it tested first. And during this time, I have to make sure that no one will make illegal things based on the library.
-
-But I can promise you that this repo is FREE and NOT for my own benefit. I will definitely release the source code shortly. Please star or watch this library to get notified when I post the source code.
-
-Sorry for the inconvenience.
+The source code of springboard part has been released! **I am looking for someone writting the GUI part (xcode + objective-c). If you are interested in it, please send a email to jiz176@pitt.edu**
 
 ## Description
 
-This library enables you to simulate touch events on iOS 11.0 - 13.6 with just one line of code! All the source code will be released later.
+This library enables you to simulate touch events on iOS 11.0 - 14 with just one line of code! Currently, the repository is mainly for programmers. In the future, I will make it suitable for people who do not understand how to code.
 
 ## Features
 
@@ -29,6 +25,7 @@ This library enables you to simulate touch events on iOS 11.0 - 13.6 with just o
 	* Programmable. Control scripts can be programmed with all the programming languages you desire.
 	* Instant controlling supported. The ios device can be controlled with no latency from other devices/computers.
 	* System-level touch simulation (will not inject to any process).
+	* Record & Playback
 2. GUI Application
 	* Script shop to download scripts.
 	* Write your own script.
@@ -49,9 +46,15 @@ This library enables you to simulate touch events on iOS 11.0 - 13.6 with just o
 
 ## Installation
 
+### Through Cydia:
 1. Open Cydia - Sources - Edit - Add - http://47.114.83.227 ("http" instead of "https"!!! Please double check this.)
 2. Install ***"ZJXTouchSimulation"*** tweak
 3. Done
+
+### Through Github:
+1. Download **com.zjx.pccontrol_0.0.2_iphoneos-arm.deb** from **release**
+2. Copy the deb file to your iOS device
+3. SSH to your iOS device and install the deb file by typing "dpkg -i /PATH/TO/om.zjx.pccontrol_0.0.2_iphoneos-arm.deb"
 
 ## Code Example
 
@@ -229,13 +232,18 @@ def executeCommand(socket, command_to_run):
     socket.send('13{}'.format(command_to_run).encode())
 ```
 
-## Demo Usage - Remote Controlling & iOS Game Controller
-**You can control your iOS device from local scripts, computers, or even other iOS devices!**
+## Demo Usage
+**Remote Controlling:**
+You can control your iOS device from local scripts, computers, or even other iOS devices!
 [![Watch the video](img/remote_control_demo.jpg)](https://youtu.be/gdSGO6rJIL4)
 
-**Here are demos of Fortnite and PUBG Mobile.**
+**Instant Controlling:**
+Here is a demo of PUBG Mobile.
 [![Watch the video](img/pubg_mobile_demo.jpg)](https://youtu.be/XvvWHL6B3Tk)
-[![Watch the video](img/fortnite_mobile_demo.jpg)](https://youtu.be/mCkTzQJ2lC8)
+
+**Recording & Playback:**
+Record touch events and playback
+[![Watch the video](img/record_playback.jpg)](https://youtu.be/WeYMx4z8N2M)
 
 ## Usage
 
@@ -250,7 +258,7 @@ What you have to do is:
 
 **The data consists of two parts, task ID part (2 digits) and task data part.**
 
-**** 
+****
 ### Task ID format
 task id should be a 2-digit integer
 
@@ -274,7 +282,9 @@ Task id table:
 * [Application Running]()
 * [System Wide Alert Box Displaying]()
 * [Shell Accessing]()
-
+* [Crazy Tap]()
+* [Recording & Playing Back]()
+* [Run Script from Shell Output]() <------ This will be very useful.
 ***1. Touch Simulation***
 
 task data should always be decimal digits, specified below
@@ -327,6 +337,40 @@ For example, if you want to emulate a "low battery" alert box to trick your frie
 You can access shell with root privileges by setting the task id to 13. The task data should be the shell command you want to execute. **Caution: executing shell command as root is powerful but dangerous.**
 
 For example, if you want to reboot your device, just send "13reboot". If you want to respring, send "13killall SpringBoard". (13 is the task id)
+
+***5. Crazy Tap***
+
+
+This touch simulation tweak allows you to tap at most 200000+ times in a minute.
+
+The task id for crazy tap is 16. Just like the way you call functions, the data to be sent should consist of 5 parameters. Instead of using "," to seperate parameters (which you use in most of the programming languages), you should use ";;" to seperate parameters. So the data format should be: 16x;;y;;elapsetime;;countToStop;;sleepUTime.
+
+x: the x coordinate on the screen you want to tap.
+y: the y coordinate on the screen you want to tap.
+elapsetime: time to elapse (how many seconds you want it to tap)
+countToStop: the crazy time will stop as long as it clicks the {countToStop} times
+sleepUTime: how many microseconds you want it to sleep between taps. (clicks slower if you increase this value, vice versa)
+
+For example, if you want to click (400.3, 500.7) on the screen for 3 seconds, and sleep 1000 microseconds between taps, send "16400.3;;500.7;;3;;0;;1000". If you want to click (100.4, 200) on the screen for 1000 times, and sleep 1500 microseconds between taps, send "16100.4;;200;;0;1000;1500". If you want to click infinitely, send "16100.4;;200;;0;;0;;1500", and when you want to sleep, either call "notify_post("com.zjx.crazytap.stop");" if you are using objective-c, or send "60" to port 5999.
+
+**Caution: for most of the devices, you should NOT sleep less than 1500 microsconds between taps. Otherwise your device will stop responding to anything, thus there is no way to stop the tap (if you encounter this, try to respring or reboot).**
+
+***6. Recording ***
+
+You can start recording your touch event by setting the task id to 14. The script will be saved at "/var/mobile/Documents/com.zjx.zxtouchsp/recording". If zxtouch is currently recording your touch events, a red dot will be displayed at the top-left corner of your screen.
+
+
+For example, if you want to start recording, just send "14". For stopping the recording, send "15".
+
+***7. Script Playback ***
+
+For current version, you can only play those scripts which are auto generated by recording. You can start a script playback by setting the task id to 19 along with a path to the script. If zxtouch is currently playing a script, a green dot will be displayed at the top-left corner of your screen.
+
+For example, if you want to start a script playback at path /var/mobile/script.bdl, just send "19/var/mobile/script.bdl". For terminating the playback, send "20".
+
+***8. Run Script from Shell Output**
+
+Comming Soon
 
 
 ## Contact
